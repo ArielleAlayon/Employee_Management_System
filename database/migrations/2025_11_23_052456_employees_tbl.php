@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('salary', 10, 2)->nullable();
             
             $table->foreignId('department_id')->constrained('departments_tbl')->onDelete('cascade');
+            $table->string('photo');
             
             $table->timestamps();
         });

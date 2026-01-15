@@ -52,7 +52,7 @@
                 <!-- Add employee form -->
                 <div class="mb-6 rounded-lg border border-stone-200 bg-neutral-50 p-6 dark:border-slate-700 dark:bg-slate-900/50">
                     <h2 class="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">Add New Employee</h2>
-                    <form action="{{ route('employees.store') }}" method="POST" class="grid gap-4 md:grid-cols-2">
+                    <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data" class="grid gap-4 md:grid-cols-2">
                         @csrf
                         <div>
                             <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">First Name</label>
@@ -79,6 +79,13 @@
                             <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Phone No.</label>
                             <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="Enter phone number" class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
                             @error('phone')
+                                <p class="mt-1 text-xs text-red-600"> {{ $message }} </p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Photo</label>
+                            <input type="file" name="photo" accept="image/*" class="w-full rounded-lg border border-stone-300 px-2 py-2 text-sm focus:outline-none dark:border-slate-600">
+                            @error('photo')
                                 <p class="mt-1 text-xs text-red-600"> {{ $message }} </p>
                             @enderror
                         </div>
@@ -110,22 +117,59 @@
                                 <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div class="md:col-span-2">
+                        <div class="md:col-span-2 flex space-x-4">
                             <button type="submit" class="rounded-lg bg-blue-700 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                                 Add Employee
                             </button>
+                             <a href="{{ route('employees.export', ['search' => request('search')]) }}" 
+                            class="bg-amber-600 hover:bg-amber-500 text-center text-white px-6 py-2 w-36 rounded-lg flex items-center shadow-md">
+                                Export to PDF
+                            </a>
                         </div>
                     </form>
                 </div>
 
                 <!-- Employee List Table -->
                 <div class="flex-1 overflow-auto">
-                    <h2 class="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">Employee List</h2>
+                    <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
+                        <div class="flex-1">
+                            <h2 class="mb-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">Employee List</h2>
+                        </div>
+                        <form method="GET" action="{{ route('employees.index') }}" class="flex flex-col gap-3 md:flex-row md:items-end w-full md:w-auto">
+                            <div class="flex-1 md:flex-none">
+                                <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Search</label>
+                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name..." class="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
+                            </div>
+                            <div class="flex-1 md:flex-none">
+                                <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Department</label>
+                                <select name="department_filter" class="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
+                                    <option value="">All Departments</option>
+                                    @foreach($departments as $department)
+                                        <option value="{{ $department->id }}" {{ request('department_filter') == $department->id ? 'selected' : '' }}>
+                                            {{ $department->dept_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700">
+                                Filter
+                            </button>
+                            @if(request('search') || request('department_filter'))
+                                <a href="{{ route('employees.index') }}" class="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-slate-700 dark:text-neutral-300">
+                                    Clear
+                                </a>
+                            @endif
+                        </form>
+                    </div>
+                    @if(request('search'))
+                        <p class="mb-4 text-sm text-neutral-600 dark:text-neutral-400">Showing results for "<strong>{{ request('search') }}</strong>" ({{ count($employees) }} found)</p>
+                    @endif
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-full">
                             <thead>
                                 <tr class="border-b border-stone-200 bg-neutral-50 dark:border-slate-700 dark:bg-slate-900/50">
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300">#</th>
+                                     <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300">Photo</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300">Name</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300">Email</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-neutral-700 dark:text-neutral-300">Phone</th>
@@ -139,6 +183,16 @@
                                 @forelse($employees as $employee)
                                     <tr>
                                         <td class="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">{{ $employee->id }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($employee->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($employee->photo))
+                                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($employee->photo) }}" 
+                                                    class="w-12 h-12 object-cover rounded-full shadow-sm">
+                                            @else
+                                                <div class="w-12 h-12 bg-gray-100 flex items-center justify-center rounded-full text-gray-600 font-semibold">
+                                                    {{ strtoupper(substr($employee->first_name,0,1).substr($employee->last_name,0,1)) }}
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td class="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">{{ $employee->first_name }} {{ $employee->last_name }}</td>
                                         <td class="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">{{ $employee->email }}</td>
                                         <td class="px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300">{{ $employee->phone ?? 'N/A' }}</td>
@@ -157,7 +211,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td class="px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400" colspan="8">
+                                        <td class="px-4 py-8 text-center text-sm text-neutral-500 dark:text-neutral-400" colspan="9">
                                             No employees found. Add your first employee above!
                                         </td>
                                     </tr>                                       
@@ -173,7 +227,7 @@
                         <div class="px-6 py-4 border-b border-stone-200 dark:border-slate-700">
                             <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Edit Employee</h3>
                         </div>
-                        <form id="editEmployeeForm" method="POST">
+                        <form id="editEmployeeForm" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
                             <div class="p-6 space-y-4 max-h-96 overflow-y-auto">
@@ -218,6 +272,12 @@
                                             @endforeach
                                         </select>
                                     </div>
+                                    <div class="md:col-span-2">
+                                        <label for="edit_photo" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Photo</label>
+                                        <input type="file" id="edit_photo" name="photo" accept="image/*"
+                                            class="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                                        <img id="edit_photo_preview" src="" alt="Preview" class="mt-2 h-24 w-24 rounded-md object-cover hidden" />
+                                    </div>
                                 </div>
                             </div>
                             <div class="px-6 py-4 border-t border-stone-200 dark:border-slate-700 flex justify-end space-x-3">
@@ -243,9 +303,6 @@
                         <div class="p-6">
                             <p class="text-neutral-700 dark:text-neutral-300 mb-4">
                                 Are you sure you want to delete employee "<span id="deleteEmployeeName" class="font-semibold"></span>"?
-                            </p>
-                            <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-                                This action cannot be undone.
                             </p>
                         </div>
                         <div class="px-6 py-4 border-t border-stone-200 dark:border-slate-700 flex justify-end space-x-3">
@@ -300,17 +357,30 @@
                     try {
                         const response = await fetch(`/employees/${employeeId}/edit`);
                         const employee = await response.json();
-                        
-                        
+
                         document.getElementById('edit_first_name').value = employee.first_name || '';
                         document.getElementById('edit_last_name').value = employee.last_name || '';
                         document.getElementById('edit_email').value = employee.email || '';
                         document.getElementById('edit_phone').value = employee.phone || '';
                         document.getElementById('edit_position').value = employee.position || '';
                         document.getElementById('edit_salary').value = employee.salary || '';
-                        
+
                         document.getElementById('edit_department_id').value = employee.department_id || '';
-                        
+
+                        // photo preview
+                        const photoPreview = document.getElementById('edit_photo_preview');
+                        if (employee.photo_url) {
+                            photoPreview.src = employee.photo_url;
+                            photoPreview.classList.remove('hidden');
+                        } else {
+                            photoPreview.src = '';
+                            photoPreview.classList.add('hidden');
+                        }
+
+                        // clear file input
+                        const photoInput = document.getElementById('edit_photo');
+                        if (photoInput) photoInput.value = null;
+
                     } catch (error) {
                         console.error('Error fetching employee data:', error);
                         alert('Error loading employee data');

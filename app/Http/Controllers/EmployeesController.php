@@ -7,12 +7,39 @@ use App\Models\Employee;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EmployeesController extends Controller
 {
-    public function index() 
+    public function index(Request $request) 
     {
-        $employees = Employee::with('department')->oldest()->get();
+        // SoftDeletes trait automatically excludes soft-deleted records
+        // Don't use whereNull('deleted_at') - it conflicts with the trait
+        $query = Employee::with('department');
+        
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            // Split search term and search for any part in first_name, last_name, or email
+            $searchParts = explode(' ', trim($searchTerm));
+            
+            $query->where(function($q) use ($searchParts) {
+                foreach ($searchParts as $part) {
+                    $part = trim($part);
+                    if (!empty($part)) {
+                        $q->orWhere('first_name', 'like', "%{$part}%")
+                          ->orWhere('last_name', 'like', "%{$part}%")
+                          ->orWhere('email', 'like', "%{$part}%");
+                    }
+                }
+            });
+        }
+
+        if ($request->filled('department_filter') && $request->department_filter != '') {
+            $query->where('department_id', $request->department_filter);
+        }
+
+        $employees = $query->latest()->get();
         $departments = Department::all();
 
         return view('dashboard', compact('employees', 'departments')); 
@@ -25,10 +52,16 @@ class EmployeesController extends Controller
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:employees_tbl',
             'phone' => 'nullable|string|max:20',
-            'position' => 'required|string|max:255',
+            'position' => 'nullable|string|max:255',
             'salary' => 'nullable|numeric|min:0',
             'department_id' => 'nullable|exists:departments_tbl,id',
-        ]); 
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('employee_photos', 'public');
+            $validated['photo'] = $photoPath;
+        }
 
         Employee::create($validated); 
         return redirect()->back()->with('success', 'Employee added successfully.'); 
@@ -44,7 +77,17 @@ class EmployeesController extends Controller
             'position' => 'required|string|max:255',
             'salary' => 'nullable|numeric|min:0',
             'department_id' => 'nullable|exists:departments_tbl,id',
-        ]); 
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        if ($request->hasFile('photo')) {
+            if ($employee->photo) {
+                Storage::disk('public')->delete($employee->photo);
+            }
+
+            $photoPath = $request->file('photo')->store('employee_photos', 'public');
+            $validated['photo'] = $photoPath;
+        }
 
         $employee->update($validated); 
         return redirect()->back()->with('success', 'Employee updated successfully.');
@@ -61,6 +104,8 @@ class EmployeesController extends Controller
             'position' => $employee->position,
             'salary' => $employee->salary,
             'department_id' => $employee->department_id,
+            'photo' => $employee->photo,
+            'photo_url' => $employee->photo ? Storage::disk('public')->url($employee->photo) : null,
             
         ]);
     }
@@ -69,5 +114,55 @@ class EmployeesController extends Controller
     {
         $employee->delete(); 
         return redirect()->back()->with('success', 'Employee deleted successfully.');
+    }
+
+    public function trash()
+    {
+        $employees = Employee::onlyTrashed()->with('department')->latest('deleted_at')->get();
+        $departments = Department::all();
+
+        return view('trash', compact('employees', 'departments'));
+    }
+
+    public function restore($id)
+    {
+        $employee = Employee::withTrashed()->findOrFail($id);
+        $employee->restore();
+
+        return redirect()->route('employees.index')->with('success', 'Employees restored successfully');
+    }
+
+    public function forceDelete($id)
+    {
+        $employee = Employee::withTrashed()->findOrFail($id);
+
+        if ($employee->photo) {
+            Storage::disk('public')->delete($employee->photo);
+        }
+
+        $employee->forceDelete();
+        return redirect()->route('employees.trash')->with('success', 'Permanently deleted!');
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $query = Employee::query();
+
+        if ($request->filled('search')) {
+            $query->where('first_name', 'last_name', 'email', 'id', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('department')) {
+            $query->where('department', $request->department);
+        }
+
+        $employees = $query->get();
+        
+        // Custom filename based on category
+        $deptName = $request->department ?: 'All';
+        $filename = "Library_Report_{$deptName}_" . now()->format('Ymd') . ".pdf";
+
+        $pdf = \Pdf::loadView('pdfexport', compact('employees'));
+        return $pdf->download($filename);
     }
 }
