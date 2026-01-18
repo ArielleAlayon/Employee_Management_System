@@ -63,6 +63,8 @@ class EmployeesController extends Controller
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('employee_photos', 'public');
             $validated['photo'] = $photoPath;
+        } else {
+            $validated['photo'] = null;
         }
 
         Employee::create($validated); 
@@ -89,6 +91,8 @@ class EmployeesController extends Controller
 
             $photoPath = $request->file('photo')->store('employee_photos', 'public');
             $validated['photo'] = $photoPath;
+        } else if (!isset($validated['photo'])) {
+            $validated['photo'] = $employee->photo;
         }
 
         $employee->update($validated); 
