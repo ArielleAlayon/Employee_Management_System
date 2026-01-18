@@ -9,18 +9,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\str_slug;
 
 class EmployeesController extends Controller
 {
     public function index(Request $request) 
     {
-        // SoftDeletes trait automatically excludes soft-deleted records
-        // Don't use whereNull('deleted_at') - it conflicts with the trait
         $query = Employee::with('department');
         
         if ($request->filled('search')) {
             $searchTerm = $request->search;
-            // Split search term and search for any part in first_name, last_name, or email
             $searchParts = explode(' ', trim($searchTerm));
             
             $query->where(function($q) use ($searchParts) {
@@ -29,7 +27,11 @@ class EmployeesController extends Controller
                     if (!empty($part)) {
                         $q->orWhere('first_name', 'like', "%{$part}%")
                           ->orWhere('last_name', 'like', "%{$part}%")
-                          ->orWhere('email', 'like', "%{$part}%");
+                          ->orWhere('email', 'like', "%{$part}%")
+                          ->orWhere('phone', 'like', "%{$part}%")
+                          ->orWhere('position', 'like', "%{$part}%")
+                          ->orWhere('salary', 'like', "%{$part}%")
+                          ->orWhere('department_id', 'like', "%{$part}%");
                     }
                 }
             });
@@ -39,7 +41,7 @@ class EmployeesController extends Controller
             $query->where('department_id', $request->department_filter);
         }
 
-        $employees = $query->latest()->get();
+        $employees = $query->get();
         $departments = Department::all();
 
         return view('dashboard', compact('employees', 'departments')); 
@@ -146,21 +148,47 @@ class EmployeesController extends Controller
 
     public function exportPDF(Request $request)
     {
-        $query = Employee::query();
+        $query = Employee::with('department');
 
         if ($request->filled('search')) {
-            $query->where('first_name', 'last_name', 'email', 'id', 'like', '%' . $request->search . '%');
+            $searchTerm = $request->search;
+            $searchParts = explode(' ', trim($searchTerm));
+            
+            $query->where(function($q) use ($searchParts) {
+                foreach ($searchParts as $part) {
+                    $part = trim($part);
+                    if (!empty($part)) {
+                        $q->orWhere('first_name', 'like', "%{$part}%")
+                          ->orWhere('last_name', 'like', "%{$part}%")
+                          ->orWhere('email', 'like', "%{$part}%")
+                          ->orWhere('phone', 'like', "%{$part}%")
+                          ->orWhere('position', 'like', "%{$part}%")
+                          ->orWhere('salary', 'like', "%{$part}%")
+                          ->orWhere('department_id', 'like', "%{$part}%");
+                    }
+                }
+            });
         }
 
-        if ($request->filled('department')) {
-            $query->where('department', $request->department);
+        if ($request->filled('department_filter') && $request->department_filter != '') {
+            $query->where('department_id', $request->department_filter);
         }
 
-        $employees = $query->get();
+        $employees = $query->latest()->get();
         
-        // Custom filename based on category
+        $searchTerm = $request->search ?: 'All';
         $deptName = $request->department ?: 'All';
-        $filename = "Library_Report_{$deptName}_" . now()->format('Ymd') . ".pdf";
+        $filename = "Employee_Report{$searchTerm}{$deptName}_" . now()->format('Ymd_His') . ".pdf";
+
+        // Convert to absolute paths for dompdf
+        $employees = $employees->map(function($employee) {
+            if ($employee->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($employee->photo)) {
+                $employee->photo_path = storage_path('app/public/' . $employee->photo);
+            } else {
+                $employee->photo_path = null;
+            }
+            return $employee;
+        });
 
         $pdf = \Pdf::loadView('pdfexport', compact('employees'));
         return $pdf->download($filename);

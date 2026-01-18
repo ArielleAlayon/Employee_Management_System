@@ -36,14 +36,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/employees', [EmployeesController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeesController::class, 'store'])->name('employees.store');
-    Route::get('/employees/{employee}/edit', [EmployeesController::class, 'edit'])->name('employees.edit'); 
-    Route::put('/employees/{employee}', [EmployeesController::class, 'update'])->name('employees.update');
-    Route::delete('/employees/{employee}', [EmployeesController::class, 'destroy'])->name('employees.destroy');
     Route::get('/employees/export', [EmployeesController::class, 'exportPDF'])->name('employees.export');
-
     Route::get('/employees/trash', [EmployeesController::class, 'trash'])->name('employees.trash');
     Route::post('/employees/{id}/restore', [EmployeesController::class, 'restore'])->name('employees.restore');
     Route::delete('/employees/{id}/force-delete', [EmployeesController::class, 'forceDelete'])->name('employees.force-delete');
+
+    Route::get('/employees/{employee}/edit', [EmployeesController::class, 'edit'])->name('employees.edit'); 
+    Route::put('/employees/{employee}', [EmployeesController::class, 'update'])->name('employees.update');
+    Route::delete('/employees/{employee}', [EmployeesController::class, 'destroy'])->name('employees.destroy');
 });
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

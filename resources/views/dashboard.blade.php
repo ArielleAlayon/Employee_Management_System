@@ -7,6 +7,30 @@
                 {{ session('success') }}    
             </div>
         @endif
+
+        @if ($errors->any())
+            <div class="rounded-lg border-l-4 border-red-500 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-400">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-circle-exclamation text-red-600 dark:text-red-400 mt-0.5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-red-800 dark:text-red-300 mb-2">Please fix the following errors:</h3>
+                        <ul class="space-y-1 text-sm text-red-700 dark:text-red-200">
+                            @foreach ($errors->all() as $error)
+                                <li class="flex items-center gap-2">
+                                    <span class="text-red-500">•</span>
+                                    {{ $error }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-600 dark:hover:text-red-300">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        @endif
         
         <div class="grid auto-rows-min gap-4 md:grid-cols-3">
             <div class="relative overflow-hidden rounded-xl border border-stone-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
@@ -55,57 +79,58 @@
                     <form action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data" class="grid gap-4 md:grid-cols-2">
                         @csrf
                         <div>
-                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">First Name</label>
-                            <input type="text" name="first_name" value="{{ old('first_name') }}" placeholder="Enter first name" required class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
+                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">First Name <span class="text-red-600">*</span></label>
+                            <input type="text" name="first_name" value="{{ old('first_name') }}" placeholder="Enter first name" required class="w-full rounded-lg border {{ $errors->has('first_name') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:text-neutral-100">
                             @error('first_name')
-                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
-                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Last Name</label>
-                            <input type="text" name="last_name" value="{{ old('last_name') }}" placeholder="Enter last name" required class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
+                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Last Name <span class="text-red-600">*</span></label>
+                            <input type="text" name="last_name" value="{{ old('last_name') }}" placeholder="Enter last name" required class="w-full rounded-lg border {{ $errors->has('last_name') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:text-neutral-100">
                             @error('last_name')
-                                <p class="mt-1 text-xs text-red-600"> {{ $message }} </p>
+                                <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
-                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Email</label>
-                            <input type="email" name="email" value="{{ old('email') }}" placeholder="Enter email" required class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
+                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Email <span class="text-red-600">*</span></label>
+                            <input type="email" name="email" value="{{ old('email') }}" placeholder="Enter email" required class="w-full rounded-lg border {{ $errors->has('email') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:text-neutral-100">
                             @error('email')
-                                <p class="mt-1 text-xs text-red-600"> {{ $message }} </p>
+                                <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
                             <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Phone No.</label>
-                            <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="Enter phone number" class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
+                            <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="Enter phone number" class="w-full rounded-lg border {{ $errors->has('phone') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:text-neutral-100">
                             @error('phone')
-                                <p class="mt-1 text-xs text-red-600"> {{ $message }} </p>
+                                <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
                             <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Photo</label>
-                            <input type="file" name="photo" accept="image/*" class="w-full rounded-lg border border-stone-300 px-2 py-2 text-sm focus:outline-none dark:border-slate-600">
+                            <input type="file" id="add_photo" name="photo" accept="image/*" class="w-full rounded-lg border {{ $errors->has('photo') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 dark:border-slate-600' }} px-2 py-2 text-sm focus:outline-none">
+                            <img id="add_photo_preview" src="" alt="Preview" class="mt-2 h-24 w-24 rounded-md object-cover hidden" />
                             @error('photo')
-                                <p class="mt-1 text-xs text-red-600"> {{ $message }} </p>
+                                <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
-                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Position</label>
-                            <input type="text" name="position" value="{{ old('position') }}" placeholder="Enter position" required class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
+                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Position <span class="text-red-600">*</span></label>
+                            <input type="text" name="position" value="{{ old('position') }}" placeholder="Enter position" required class="w-full rounded-lg border {{ $errors->has('position') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:text-neutral-100">
                             @error('position')
-                                <p class="mt-1 text-xs text-red-600"> {{ $message }} </p>
+                                <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
                             <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Salary</label>
-                            <input type="number" name="salary" value="{{ old('salary') }}" placeholder="Enter salary" step="0.01" class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
+                            <input type="number" name="salary" value="{{ old('salary') }}" placeholder="Enter salary" step="0.01" class="w-full rounded-lg border {{ $errors->has('salary') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:text-neutral-100">
                             @error('salary')
-                                <p class="mt-1 text-xs text-red-600"> {{ $message }} </p>
+                                <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                             @enderror
                         </div>
                         <div class="md:col-span-2">
-                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Department</label>
-                            <select name="department_id" required class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-neutral-100">
+                            <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Department <span class="text-red-600">*</span></label>
+                            <select name="department_id" required class="w-full rounded-lg border {{ $errors->has('department_id') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:text-neutral-100">
                                 <option value="">Select a Department</option>
                                 @foreach($departments as $department)
                                     <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
@@ -114,14 +139,14 @@
                                 @endforeach
                             </select>
                             @error('department_id')
-                                <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                             @enderror
                         </div>
                         <div class="md:col-span-2 flex space-x-4">
                             <button type="submit" class="rounded-lg bg-blue-700 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                                 Add Employee
                             </button>
-                             <a href="{{ route('employees.export', ['search' => request('search')]) }}" 
+                             <a href="{{ route('employees.export', ['search' => request('search'), 'department_filter' => request('department_filter')]) }}" 
                             class="bg-amber-600 hover:bg-amber-500 text-center text-white px-6 py-2 w-36 rounded-lg flex items-center shadow-md">
                                 Export to PDF
                             </a>
@@ -407,6 +432,45 @@
                         closeDeleteModal();
                     }
                 });
+
+                // Add photo preview for add employee form
+                const addPhotoInput = document.getElementById('add_photo');
+                if (addPhotoInput) {
+                    addPhotoInput.addEventListener('change', function(e) {
+                        const file = e.target.files[0];
+                        const preview = document.getElementById('add_photo_preview');
+                        
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                preview.src = event.target.result;
+                                preview.classList.remove('hidden');
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            preview.src = '';
+                            preview.classList.add('hidden');
+                        }
+                    });
+                }
+
+                // Add photo preview for edit modal
+                const editPhotoInput = document.getElementById('edit_photo');
+                if (editPhotoInput) {
+                    editPhotoInput.addEventListener('change', function(e) {
+                        const file = e.target.files[0];
+                        const preview = document.getElementById('edit_photo_preview');
+                        
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(event) {
+                                preview.src = event.target.result;
+                                preview.classList.remove('hidden');
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
                 </script>
             </div>
         </div>

@@ -7,6 +7,30 @@
             </div>
         @endif
 
+        @if ($errors->any())
+            <div class="rounded-lg border-l-4 border-red-500 bg-red-50 p-4 dark:bg-red-900/20 dark:border-red-400">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0">
+                        <i class="fa-solid fa-circle-exclamation text-red-600 dark:text-red-400 mt-0.5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-red-800 dark:text-red-300 mb-2">Please fix the following errors:</h3>
+                        <ul class="space-y-1 text-sm text-red-700 dark:text-red-200">
+                            @foreach ($errors->all() as $error)
+                                <li class="flex items-center gap-2">
+                                    <span class="text-red-500">•</span>
+                                    {{ $error }}
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-600 dark:hover:text-red-300">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        @endif
+
         <div class="relative h-full flex-1 overflow-hidden rounded-xl border border-stone-200 bg-white dark:border-stone-700 dark:bg-slate-800">
             <div class="flex h-full flex-col p-6">
 
@@ -18,21 +42,21 @@
 
                         <div class="grid gap-4 md:grid-cols-3">
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Department Name</label>
+                                <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Department Name <span class="text-red-600">*</span></label>
                                 <input type="text" name="dept_name" value="{{ old('dept_name') }}"
                                        placeholder="Enter department name" required
-                                       class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-stone-600 dark:bg-slate-800 dark:text-neutral-100">
-                                @error('dept_name')  <!-- Changed error to dept_name -->
-                                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                       class="w-full rounded-lg border {{ $errors->has('dept_name') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-stone-600 dark:text-neutral-100">
+                                @error('dept_name')
+                                    <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                                 @enderror
                             </div>
 
                             <div class="md:col-span-2">
-                                <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Description</label>
-                                <textarea name="description" rows="1" placeholder="Enter department description"
-                                          class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-stone-600 dark:bg-slate-800 dark:text-neutral-100">{{ old('description') }}</textarea>
+                                <label class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Description <span class="text-red-600">*</span></label>
+                                <textarea name="description" required rows="1" placeholder="Enter department description"
+                                          class="w-full rounded-lg border {{ $errors->has('description') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-stone-600 dark:text-neutral-100">{{ old('description') }}</textarea>
                                 @error('description')
-                                    <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
@@ -106,15 +130,21 @@
                             @method('PUT')
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="md:col-span-2">
-                                    <label for="edit_department_name" class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Department Name</label>
+                                    <label for="edit_department_name" class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Department Name <span class="text-red-600">*</span></label>
                                     <input type="text" id="edit_department_name" name="dept_name" required
-                                        class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-stone-600 dark:bg-slate-800 dark:text-neutral-100">
+                                        class="w-full rounded-lg border {{ $errors->has('dept_name') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-stone-600 dark:text-neutral-100">
+                                    @error('dept_name')
+                                        <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
+                                    @enderror
                                 </div>
 
                                 <div class="md:col-span-2">
                                     <label for="edit_description" class="mb-2 block text-sm font-medium text-neutral-700 dark:text-neutral-300">Description</label>
                                     <textarea id="edit_description" name="description" rows="3"
-                                            class="w-full rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-stone-600 dark:bg-slate-800 dark:text-neutral-100"></textarea>
+                                            class="w-full rounded-lg border {{ $errors->has('description') ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-stone-300 bg-white dark:bg-slate-800' }} px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-stone-600 dark:text-neutral-100"></textarea>
+                                    @error('description')
+                                        <p class="mt-1.5 flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400"><i class="fa-solid fa-exclamation-circle"></i>{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
 
